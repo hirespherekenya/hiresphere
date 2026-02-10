@@ -11,8 +11,9 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+    <meta name="apple-mobile-web-app-title" content="Hiresphere">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/logo.png">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -399,16 +400,22 @@
 <a href="#top" class="scroll-top-btn" id="scrollTopBtn"><i class="fas fa-chevron-up"></i></a>
 
 <!-- PWA POPUP -->
-<div id="pwa-install-popup" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+<div id="pwa-install-popup" style="display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 20px; z-index: 3000; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: slideUpPwa 0.5s ease-out;">
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-        <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-dark); display: grid; place-items: center; font-size: 1.5rem; color: #fff;"><i class="fas fa-download"></i></div>
-        <div><div style="font-weight:700; color:var(--primary-dark); font-size:1rem;">Install App</div><div style="font-size:0.8rem; color:#64748b;">Add to home screen.</div></div>
+        <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-dark); display: grid; place-items: center; font-size: 1.5rem; color: #fff; box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);">
+            <i class="fas fa-download"></i>
+        </div>
+        <div>
+            <div style="font-weight:700; color:var(--primary-dark); font-size:1rem;">Install App</div>
+            <div style="font-size:0.85rem; color:#64748b;">Add to home screen for fast access.</div>
+        </div>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button onclick="installPWA()" style="flex: 2; padding: 12px; background: var(--primary-dark); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff;">Install</button>
-        <button onclick="dismissPWA()" style="flex: 1; padding: 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; color: var(--text-muted); cursor: pointer; font-weight: 600;">Later</button>
+        <button id="pwaInstallBtn" style="flex: 2; padding: 12px; background: var(--primary-dark); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #fff; transition:0.3s;">Install</button>
+        <button id="pwaDismissBtn" style="flex: 1; padding: 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; color: var(--text-muted); cursor: pointer; font-weight: 600; transition:0.3s;">Later</button>
     </div>
 </div>
+<style>@keyframes slideUpPwa { from { transform: translateX(-50%) translateY(50px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }</style>
 
 <!-- LOGIC -->
 <script type="module">
@@ -474,7 +481,6 @@
                 if(data.enableStats) {
                     statsSection.style.display = 'block';
                     let statsHTML = '';
-                    // Assuming stats is an array in Firestore or static
                     const stats = data.stats || [
                         { label: 'Careers Launched', value: 5000, suffix: 'k+' },
                         { label: 'Verification Rate', value: 98, suffix: '%' },
@@ -489,7 +495,7 @@
                         </div>`;
                     });
                     statsGrid.innerHTML = statsHTML;
-                    initStatsObserver(); // Initialize animation
+                    initStatsObserver(); 
                 }
             }
 
@@ -513,7 +519,6 @@
                     } catch(e) {}
                 }
 
-                // Dynamic Contact Button (WhatsApp or Email)
                 if(data.whatsappPhone) {
                     contactBtn.href = `https://wa.me/${data.whatsappPhone}`;
                     contactBtn.target = "_blank";
@@ -665,7 +670,6 @@
         fetchRecentJobs();
         document.getElementById('copyrightYear').textContent = new Date().getFullYear();
 
-        // Search Filter
         const searchInput = document.getElementById('jobSearch');
         const categorySelect = document.getElementById('categoryFilter');
 
@@ -706,7 +710,7 @@
                             counter.innerText = Math.ceil(current);
                             setTimeout(updateCounter, 20);
                         } else {
-                            if(target === 5000) counter.innerText = "5"; // Formatting hack for 5k
+                            if(target === 5000) counter.innerText = "5"; 
                             else counter.innerText = target;
                         }
                     };
@@ -721,7 +725,7 @@
 </script>
 
 <script>
-    // Header Scroll & Reveal Animations
+    // Header Scroll & Reveal
     document.addEventListener('DOMContentLoaded', () => {
         const header = document.getElementById('header');
         const scrollTopBtn = document.getElementById('scrollTopBtn');
@@ -756,21 +760,52 @@
 
     // PWA Logic
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => { 
-        e.preventDefault(); 
-        deferredPrompt = e; 
-        setTimeout(() => document.getElementById('pwa-install-popup').style.display = 'block', 3000); 
+    const pwaPopup = document.getElementById('pwa-install-popup');
+    const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+    const pwaDismissBtn = document.getElementById('pwaDismissBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+        // Show the install prompt after a short delay (e.g., 3 seconds)
+        setTimeout(() => {
+            pwaPopup.style.display = 'block';
+        }, 3000);
     });
-    window.installPWA = async () => { 
-        if(deferredPrompt) { 
-            deferredPrompt.prompt(); 
-            const {outcome} = await deferredPrompt.userChoice; 
-            if(outcome==='accepted') document.getElementById('pwa-install-popup').style.display = 'none'; 
-            deferredPrompt=null; 
+
+    pwaInstallBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Show the install prompt
+            deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            
+            // We've used the prompt, and can't use it again, throw it away
+            deferredPrompt = null;
+            // Hide the custom popup
+            pwaPopup.style.display = 'none';
         }
-    };
-    window.dismissPWA = () => document.getElementById('pwa-install-popup').style.display = 'none';
-    if("serviceWorker" in navigator) navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    });
+
+    pwaDismissBtn.addEventListener('click', () => {
+        pwaPopup.style.display = 'none';
+    });
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+        });
+    }
 </script>
 
 </body>
