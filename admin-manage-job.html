@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Manage Jobs | Admin Portal</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-dark: #0F172A;
+            --primary-light: #1e293b;
+            --accent-main: #2563EB;
+            --accent-hover: #1d4ed8;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-body: #F8FAFC;
+            --surface-white: #ffffff;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background: var(--bg-body);
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        /* ---- HEADER ---- */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(16px);
+            padding: 16px 5%; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        header.hidden { transform: translateY(-100%); }
+        
+        .logo-section { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-text { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+        .badge-admin { background: var(--primary-dark); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+        .header-controls { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { position: relative; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .icon-btn:hover { color: var(--accent-main); }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; border: 2px solid white; opacity: 0; }
+        .notif-badge.active { opacity: 1; }
+        
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; border: 2px solid #e2e8f0; }
+
+        /* ---- DASHBOARD CONTENT ---- */
+        .main-wrapper { max-width: 1200px; margin: 90px auto 0; padding: 0 5%; }
+
+        /* Stats Row */
+        .stats-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; 
+        }
+        .stat-card {
+            background: var(--surface-white); padding: 20px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.03); display: flex; align-items: center; gap: 15px;
+        }
+        .stat-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .stat-icon.blue { background: #eff6ff; color: var(--accent-main); }
+        .stat-icon.green { background: #ecfdf5; color: var(--success); }
+        .stat-icon.orange { background: #fffbeb; color: var(--warning); }
+        .stat-info h3 { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+        .stat-info p { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+
+        /* Page Header */
+        .page-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .page-title h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); }
+        .btn-primary { 
+            background: var(--accent-main); color: white; padding: 10px 20px; border-radius: var(--radius-sm);
+            text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
+            transition: 0.2s; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+        /* Filters */
+        .filter-container {
+            background: var(--surface-white); padding: 15px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .search-box { flex: 1; position: relative; min-width: 250px; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-box input {
+            width: 100%; padding: 10px 10px 10px 36px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm);
+            font-family: inherit; font-size: 0.9rem; outline: none; transition: 0.2s;
+        }
+        .search-box input:focus { border-color: var(--accent-main); }
+        .filter-dropdown {
+            padding: 10px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); font-size: 0.9rem;
+            background: white; color: var(--text-main); cursor: pointer; outline: none;
+        }
+
+        /* Table */
+        .table-card { background: var(--surface-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        thead { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        th { padding: 16px 20px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #fcfcfc; }
+
+        .job-main { display: flex; flex-direction: column; }
+        .job-title { font-weight: 600; color: var(--primary-dark); font-size: 0.95rem; }
+        .job-company { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+        
+        /* Status Pills */
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+        .st-active { background: #DCFCE7; color: #166534; } /* Green */
+        .st-paused { background: #FEF3C7; color: #92400E; } /* Orange */
+        .st-closed { background: #F1F5F9; color: #475569; } /* Gray */
+
+        /* Action Menu */
+        .action-group { display: flex; gap: 6px; }
+        .act-btn { 
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
+            border-radius: 6px; border: 1px solid #e2e8f0; background: white; color: var(--text-muted); 
+            cursor: pointer; transition: 0.2s;
+        }
+        .act-btn:hover { background: #f1f5f9; color: var(--primary-dark); }
+        .act-btn.delete:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
+
+        /* Context Menu (Custom Dropdown for Status) */
+        .status-dropdown-wrapper { position: relative; }
+        .status-menu {
+            position: absolute; top: 100%; right: 0; width: 140px; background: white; 
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;
+            z-index: 50; display: none; overflow: hidden;
+        }
+        .status-menu.show { display: block; }
+        .status-item { 
+            padding: 10px 15px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-main); 
+        }
+        .status-item:hover { background: #f8fafc; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000;
+            display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: var(--radius-lg);
+            text-align: center; transform: translateY(20px); transition: 0.3s; box-shadow: var(--shadow-lg);
+        }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-icon { width: 60px; height: 60px; background: #fef2f2; color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 15px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modal { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: #f1f5f9; color: var(--text-main); }
+        .btn-confirm { background: var(--danger); color: white; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: #1e293b; padding: 12px 30px;
+            border-radius: 50px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4); z-index: 1000;
+            transition: transform 0.4s;
+        }
+        .bottom-nav.hidden { transform: translateX(-50%) translateY(150%); }
+        .nav-link { color: #94a3b8; font-size: 1.2rem; transition: 0.2s; position: relative; }
+        .nav-link.active { color: white; }
+        .nav-link.active::after { content:''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: var(--accent-main); border-radius: 50%; }
+        
+        .nav-fab {
+            background: var(--accent-main); color: white; width: 55px; height: 55px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; transform: translateY(-30%); box-shadow: 0 8px 15px rgba(37, 99, 235, 0.4);
+            border: 4px solid var(--bg-body);
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 10px 20px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: 500; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 2001;
+        }
+        #toast.show { opacity: 1; bottom: 110px; }
+
+        @media(max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .badge-category, .date-cell { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header id="header">
+        <a href="admin-dashboard.html" class="logo-section">
+            <span class="logo-text">HireSphere</span>
+            <span class="badge-admin">Admin</span>
+        </a>
+        <div class="header-controls">
+            <div class="icon-btn" title="Messages">
+                <i class="fas fa-envelope"></i>
+                <div class="notif-badge" id="msgBadge">0</div>
+            </div>
+            <div class="avatar" id="adminAvatar">A</div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-briefcase"></i></div>
+                <div class="stat-info">
+                    <h3 id="countActive">0</h3>
+                    <p>Active Jobs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-pause-circle"></i></div>
+                <div class="stat-info">
+                    <h3 id="countPaused">0</h3>
+                    <p>Apps Paused</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <h3 id="countTotalApps">0</h3>
+                    <p>Total Candidates</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Title & Action -->
+        <div class="page-actions">
+            <div class="page-title">
+                <h1>Job Listings</h1>
+            </div>
+            <a href="admin-post-job.html" class="btn-primary">
+                <i class="fas fa-plus"></i> Post New Job
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search title or company...">
+            </div>
+            <select id="statusFilter" class="filter-dropdown">
+                <option value="All">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Paused">Paused</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job Role</th>
+                            <th class="badge-category">Category</th>
+                            <th>Status & Apps</th>
+                            <th class="date-cell">Posted</th>
+                            <th style="text-align: right;">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="jobsTableBody">
+                        <!-- JS Injected -->
+                        <tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+            <h3>Delete Job Posting?</h3>
+            <p style="color:#64748b; margin-top:10px; font-size:0.9rem;">
+                This will permanently remove the job and all associated application data. This action cannot be undone.
+            </p>
+            <div class="modal-btns">
+                <button class="btn-modal btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-modal btn-confirm" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="admin-dashboard.html" class="nav-link"><i class="fas fa-th-large"></i></a>
+        <a href="admin-apps.html" class="nav-link"><i class="fas fa-user-friends"></i></a>
+        <a href="admin-post-job.html" class="nav-fab"><i class="fas fa-plus"></i></a>
+        <a href="admin-manage-job.html" class="nav-link active"><i class="fas fa-briefcase"></i></a>
+        <a href="admin-settings.html" class="nav-link"><i class="fas fa-cog"></i></a>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast">Update Successful</div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { auth, db } from './config.js'; 
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const tableBody = document.getElementById('jobsTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const deleteModal = document.getElementById('deleteModal');
+        let jobToDelete = null;
+        let allJobs = [];
+
+        // --- AUTH CHECK ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const uDoc = await getDoc(doc(db, "users", user.uid));
+                if (!uDoc.exists() || uDoc.data().role !== 'admin') return window.location.href = "signin.html";
+                document.getElementById('adminAvatar').textContent = (uDoc.data().fullName || 'A').charAt(0).toUpperCase();
+                loadJobs();
+            } else {
+                window.location.href = "signin.html";
+            }
+        });
+
+        // --- LOAD JOBS ---
+        function loadJobs() {
+            const q = query(collection(db, "jobs"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                allJobs = [];
+                let activeCount = 0;
+                let pausedCount = 0;
+                let totalApps = 0;
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const job = { id: docSnap.id, ...data };
+                    allJobs.push(job);
+                    
+                    // Stats Calculation
+                    if(data.status === 'Active') activeCount++;
+                    if(data.status === 'Paused') pausedCount++;
+                    totalApps += (data.applicationCount || 0);
+                });
+
+                // Update Stats UI
+                document.getElementById('countActive').textContent = activeCount;
+                document.getElementById('countPaused').textContent = pausedCount;
+                document.getElementById('countTotalApps').textContent = totalApps;
+
+                renderJobs();
+            });
+        }
+
+        // --- RENDER TABLE ---
+        function renderJobs() {
+            const term = searchInput.value.toLowerCase();
+            const filter = statusFilter.value;
+
+            const filtered = allJobs.filter(job => {
+                // Determine display status logic
+                let derivedStatus = job.status || 'Active'; // Default to active if missing
+                if (derivedStatus === 'Open') derivedStatus = 'Active'; // Normalize old data
+                
+                const matchSearch = (job.title + job.company).toLowerCase().includes(term);
+                const matchStatus = filter === 'All' || derivedStatus === filter;
+                return matchSearch && matchStatus;
+            });
+
+            tableBody.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No matching jobs found.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(job => {
+                // Normalizing Status Logic
+                // Status can be: 'Active' (Open), 'Paused' (No Apps), 'Closed' (Archived)
+                let status = job.status || 'Active';
+                if(status === 'Open') status = 'Active'; 
+
+                let badgeClass = 'st-active';
+                let iconClass = 'fa-check-circle';
+
+                if (status === 'Paused') { badgeClass = 'st-paused'; iconClass = 'fa-pause-circle'; }
+                if (status === 'Closed') { badgeClass = 'st-closed'; iconClass = 'fa-lock'; }
+
+                const date = job.createdAt ? new Date(job.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                
+                const html = `
+                    <tr>
+                        <td>
+                            <div class="job-main">
+                                <span class="job-title">${job.title}</span>
+                                <span class="job-company"><i class="fas fa-building"></i> ${job.company}</span>
+                            </div>
+                        </td>
+                        <td class="badge-category"><span style="background:#eff6ff; color:#3b82f6; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">${job.category || 'General'}</span></td>
+                        <td>
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <span class="status-pill ${badgeClass}"><i class="fas ${iconClass}"></i> ${status}</span>
+                                <span style="font-size:0.75rem; color:#64748b; margin-left:5px;"><b>${job.applicationCount || 0}</b> Applicants</span>
+                            </div>
+                        </td>
+                        <td class="date-cell" style="color:#64748b; font-size:0.85rem;">${date}</td>
+                        <td>
+                            <div class="action-group" style="justify-content: flex-end;">
+                                <button class="act-btn" onclick="location.href='admin-post-job.html?edit=${job.id}'" title="Edit">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                
+                                <div class="status-dropdown-wrapper">
+                                    <button class="act-btn" onclick="toggleMenu('${job.id}')" title="Change Status">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div id="menu-${job.id}" class="status-menu">
+                                        <div class="status-item" onclick="setStatus('${job.id}', 'Active')">
+                                            <div class="dot" style="background:#10b981"></div> Set Active
+                                        </div>
+                                        <div class="status-item" onclick="setStatus('${job.id}', 'Paused')">
+                                            <div class="dot" style="background:#f59e0b"></div> Pause Apps
+                                        </div>
+                                        <div class="status-item" onclick="setStatus('${job.id}', 'Closed')">
+                                            <div class="dot" style="background:#64748b"></div> Close Job
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="act-btn delete" onclick="confirmDelete('${job.id}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // --- ACTIONS ---
+        
+        // 1. Toggle Status Menu
+        window.toggleMenu = (id) => {
+            // Close others
+            document.querySelectorAll('.status-menu').forEach(el => {
+                if(el.id !== `menu-${id}`) el.classList.remove('show');
+            });
+            const menu = document.getElementById(`menu-${id}`);
+            menu.classList.toggle('show');
+        };
+
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.status-dropdown-wrapper')) {
+                document.querySelectorAll('.status-menu').forEach(el => el.classList.remove('show'));
+            }
+        });
+
+        // 2. Set Status Logic
+        window.setStatus = async (id, newStatus) => {
+            try {
+                // Determine applicationsEnabled boolean based on status
+                const applicationsEnabled = (newStatus === 'Active');
+                
+                await updateDoc(doc(db, "jobs", id), { 
+                    status: newStatus,
+                    applicationsEnabled: applicationsEnabled
+                });
+                
+                showToast(`Job status updated to ${newStatus}`);
+            } catch (err) {
+                console.error(err);
+                alert("Error updating status");
+            }
+        };
+
+        // 3. Delete Logic (Modal)
+        window.confirmDelete = (id) => {
+            jobToDelete = id;
+            deleteModal.classList.add('active');
+        };
+
+        window.closeModal = () => {
+            deleteModal.classList.remove('active');
+            jobToDelete = null;
+        };
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (!jobToDelete) return;
+            try {
+                // 1. Delete the Job Doc
+                await deleteDoc(doc(db, "jobs", jobToDelete));
+                // Note: In a production app, you might also want to delete all 'applications' 
+                // sub-collections or related docs here using a Cloud Function or batch write.
+                
+                showToast("Job deleted successfully");
+                closeModal();
+            } catch (err) {
+                console.error(err);
+                alert("Failed to delete job.");
+            }
+        });
+
+        // 4. Search Filter
+        searchInput.addEventListener('input', renderJobs);
+        statusFilter.addEventListener('change', renderJobs);
+
+        // 5. Toast
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Scroll Logic for Nav
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const current = window.pageYOffset;
+            const header = document.getElementById('header');
+            const nav = document.getElementById('bottomNav');
+            
+            if (current <= 0) {
+                header.classList.remove('hidden');
+                nav.classList.remove('hidden');
+            } else if (current > lastScroll && current > 50) {
+                header.classList.add('hidden');
+                nav.classList.add('hidden');
+            } else {
+                header.classList.remove('hidden');
+                nav.classList.remove('hidden');
+            }
+            lastScroll = current;
+        });
+
+    </script>
+</body>
+</html>

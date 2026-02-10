@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My Applications | HireSphere</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+
+    <!-- Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- PDF Lib -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary-dark: #0F172A;
+            --primary-blue: #334155;
+            --accent-main: #2563EB;
+            --bg-body: #F8FAFC;
+            --surface-white: #ffffff;
+            
+            /* Status Colors */
+            --st-received: #64748b;
+            --st-review: #0ea5e9;
+            --st-verified: #10b981;
+            --st-shortlisted: #f59e0b;
+            --st-hired: #1e293b;
+            --st-rejected: #ef4444;
+
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
+            background: url('assets/images/background.png') repeat, var(--bg-body);
+            background-size: 300px;
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        /* HEADER */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 5%; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000; box-shadow: var(--shadow-sm); border-bottom: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        header.nav-hidden { transform: translateY(-100%); }
+
+        .logo-con { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-con img { height: 38px; width: auto; }
+        .logo-text { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+        
+        .btn-refresh { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: var(--primary-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .btn-refresh:hover { background: var(--primary-dark); color: white; transform: rotate(180deg); }
+
+        /* MAIN CONTENT */
+        .container { margin-top: 80px; padding: 20px 5%; max-width: 800px; margin-left: auto; margin-right: auto; }
+
+        .page-head { margin-bottom: 25px; }
+        .page-title { font-size: 1.8rem; font-family: 'Playfair Display', serif; color: var(--primary-dark); font-weight: 700; }
+        .page-sub { font-size: 0.9rem; color: #64748b; margin-top: 5px; }
+
+        /* APPLICATION CARDS */
+        .app-list { display: grid; gap: 20px; }
+
+        .app-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s; position: relative;
+        }
+        .app-card:active { transform: scale(0.98); }
+
+        .ac-header { padding: 20px; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: flex-start; }
+        .job-info h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+        .job-info p { font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
+        .ac-date { font-size: 0.75rem; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; color: #475569; font-weight: 600; }
+
+        .ac-body { padding: 20px; }
+        
+        /* Status Steps Visualization */
+        .status-track { display: flex; justify-content: space-between; position: relative; margin-bottom: 15px; }
+        .track-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #e2e8f0; z-index: 1; transform: translateY(-50%); }
+        .track-dot { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; z-index: 2; position: relative; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s; }
+        
+        .track-dot.active { transform: scale(1.3); }
+        .track-dot.s-Received.active { background: var(--st-received); }
+        .track-dot.s-Review.active { background: var(--st-review); }
+        .track-dot.s-Verified.active { background: var(--st-verified); }
+        .track-dot.s-Shortlisted.active { background: var(--st-shortlisted); }
+        .track-dot.s-Hired.active { background: var(--st-hired); }
+
+        /* Current Status Badge */
+        .status-badge { 
+            display: flex; align-items: center; gap: 8px; padding: 10px 15px; 
+            border-radius: 12px; font-weight: 700; font-size: 0.9rem; margin-top: 10px;
+        }
+        .sb-Received { background: #f1f5f9; color: var(--st-received); }
+        .sb-Review { background: #e0f2fe; color: var(--st-review); border: 1px solid #bae6fd; }
+        .sb-Verified { background: #dcfce7; color: var(--st-verified); border: 1px solid #86efac; }
+        .sb-Shortlisted { background: #fef3c7; color: var(--st-shortlisted); border: 1px solid #fcd34d; }
+        .sb-Hired { background: var(--primary-dark); color: white; border: 1px solid var(--primary-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .sb-Rejected { background: #fee2e2; color: var(--st-rejected); border: 1px solid #fecaca; }
+
+        .ac-footer { background: #f8fafc; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; }
+        .pay-info { font-size: 0.8rem; font-weight: 600; color: #64748b; display: flex; gap: 6px; align-items: center; }
+        .btn-view { color: var(--accent-main); font-weight: 600; text-decoration: none; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; background: none; border: none; }
+
+        /* MODAL */
+        .modal-bg { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-bg.open { display: flex; }
+        .modal-card { background: white; width: 90%; max-width: 450px; border-radius: 24px; padding: 0; animation: slideUp 0.3s; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; }
+
+        .m-head { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .m-title { font-size: 1.1rem; font-weight: 700; font-family: 'Playfair Display', serif; }
+        .m-body { padding: 25px; }
+
+        /* Dynamic Feedback Box in Modal */
+        .alert-box { padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid transparent; }
+        .ab-Review { background: #e0f2fe; border-color: var(--st-review); color: #075985; }
+        .ab-Verified { background: #ecfdf5; border-color: var(--st-verified); color: #065f46; }
+        .ab-Hired { background: #f8fafc; border-color: var(--primary-dark); color: var(--primary-dark); }
+        .ab-Rejected { background: #fef2f2; border-color: var(--st-rejected); color: #991b1b; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .ig-row { display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0; }
+        .ig-lbl { color: #64748b; font-size: 0.85rem; }
+        .ig-val { color: var(--primary-dark); font-weight: 600; font-size: 0.9rem; text-align: right; }
+
+        .m-actions { padding: 20px 25px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: grid; gap: 10px; }
+        .act-btn { padding: 12px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; width: 100%; }
+        
+        .btn-receipt { background: white; border: 1px solid #cbd5e1; color: var(--primary-dark); }
+        .btn-wa { background: #25D366; color: white; border: none; }
+        .btn-close { background: #f1f5f9; color: #64748b; }
+
+        /* Loader */
+        #page-loader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-dark); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Bottom Nav */
+        .btm-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 25px; border-radius: 35px; z-index: 9999;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+        .btm-nav.nav-hidden { transform: translate(-50%, 200%); }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.65rem; font-weight: 600; transition: 0.2s; }
+        .nav-item i { font-size: 1.2rem; }
+        .nav-item.active { color: #fff; transform: translateY(-2px); }
+        .nav-item.active i { color: var(--accent-main); }
+        .nav-badge { position: absolute; top: -5px; right: 2px; background: #ef4444; color: white; width: 16px; height: 16px; border-radius: 50%; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; }
+        .nav-badge.show { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div id="page-loader"><div class="spinner"></div></div>
+
+    <header id="header">
+        <a href="dashboard.html" class="logo-con">
+            <img src="assets/images/logo.png" alt="Logo">
+            <span class="logo-text">HireSphere</span>
+        </a>
+        <button class="btn-refresh" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i></button>
+    </header>
+
+    <div class="container">
+        <div class="page-head">
+            <h1 class="page-title">My Applications</h1>
+            <p class="page-sub">Track your progress and payment status.</p>
+        </div>
+
+        <div id="appList" class="app-list"></div>
+        
+        <div id="emptyState" style="text-align:center; padding:50px; display:none; color:#94a3b8;">
+            <i class="fas fa-file-contract" style="font-size:3rem; margin-bottom:15px; opacity:0.3;"></i>
+            <p>You haven't applied to any jobs yet.</p>
+        </div>
+    </div>
+
+    <!-- DETAILS MODAL -->
+    <div id="detailsModal" class="modal-bg">
+        <div class="modal-card">
+            <div class="m-head">
+                <div class="m-title">Details</div>
+                <i class="fas fa-times" style="font-size:1.2rem; color:#94a3b8; cursor:pointer;" onclick="closeModal()"></i>
+            </div>
+            
+            <div class="m-body" id="modalBody"></div>
+
+            <div class="m-actions">
+                <button class="act-btn btn-receipt" onclick="downloadReceipt()">
+                    <i class="fas fa-download"></i> Download Receipt
+                </button>
+                <button class="act-btn btn-wa" onclick="contactSupport()">
+                    <i class="fab fa-whatsapp"></i> Contact Support
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="btm-nav" id="btmNav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Home</span></a>
+        <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i><span>Jobs</span></a>
+        <a href="notifications.html" class="nav-item">
+            <div class="nav-badge" id="navBadge">0</div>
+            <i class="fas fa-bell"></i><span>Alerts</span>
+        </a>
+        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </nav>
+
+    <script type="module">
+        import { auth, db } from './config.js'; 
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const appList = document.getElementById('appList');
+        const emptyState = document.getElementById('emptyState');
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const loader = document.getElementById('page-loader');
+
+        let currentApp = null;
+        let supportPhone = '254700000000'; // Default, fetched from settings
+
+        // AUTH
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Get Support Phone
+                try {
+                    const s = await getDoc(doc(db, "settings", "signup_page"));
+                    if(s.exists() && s.data().whatsappNumber) supportPhone = s.data().whatsappNumber;
+                } catch(e) {}
+
+                loadApplications(user.uid);
+                setupNotifs(user.uid);
+                loader.style.display = 'none';
+            } else window.location.href = "signin.html";
+        });
+
+        // LOAD APPS
+        function loadApplications(uid) {
+            const q = query(collection(db, "applications"), where("userId", "==", uid), orderBy("appliedAt", "desc"));
+            
+            onSnapshot(q, (snap) => {
+                appList.innerHTML = '';
+                if (snap.empty) { emptyState.style.display = 'block'; return; }
+                emptyState.style.display = 'none';
+
+                snap.forEach(d => {
+                    const app = { id: d.id, ...d.data() };
+                    renderCard(app);
+                });
+            });
+        }
+
+        // RENDER CARD
+        function renderCard(app) {
+            const date = app.appliedAt ? new Date(app.appliedAt.seconds*1000).toLocaleDateString() : 'N/A';
+            const status = app.status || 'Received';
+
+            // 1. Determine Status Styling
+            let sIcon = 'fa-clock';
+            let sClass = 'sb-Received';
+            let sText = status;
+            
+            if(status === 'Under Review') { sIcon = 'fa-search'; sClass = 'sb-Review'; }
+            else if(status === 'Verified') { sIcon = 'fa-check-circle'; sClass = 'sb-Verified'; }
+            else if(status === 'Shortlisted') { sIcon = 'fa-star'; sClass = 'sb-Shortlisted'; }
+            else if(status === 'Hired') { sIcon = 'fa-briefcase'; sClass = 'sb-Hired'; }
+            else if(status === 'Rejected') { sIcon = 'fa-times-circle'; sClass = 'sb-Rejected'; }
+
+            // 2. Progress Tracker Logic
+            // The steps: Received -> Review -> Verified -> Shortlisted -> Hired
+            const steps = ['Received', 'Under Review', 'Verified', 'Shortlisted', 'Hired'];
+            let dotsHTML = '';
+            
+            if (status === 'Rejected') {
+                // If rejected, show red line
+                dotsHTML = `<div style="height:4px; background:#fee2e2; border-radius:2px; width:100%;"></div>`;
+            } else {
+                // Calculate progress
+                let currentIdx = steps.indexOf(status);
+                // Handle edge case if status isn't exactly in list (e.g. legacy data)
+                if(currentIdx === -1) currentIdx = 0; 
+
+                dotsHTML = `<div class="track-line"></div>`;
+                steps.forEach((st, idx) => {
+                    let active = idx <= currentIdx ? 'active' : '';
+                    let dotClass = '';
+                    if(st === 'Received') dotClass = 's-Received';
+                    if(st === 'Under Review') dotClass = 's-Review';
+                    if(st === 'Verified') dotClass = 's-Verified';
+                    if(st === 'Shortlisted') dotClass = 's-Shortlisted';
+                    if(st === 'Hired') dotClass = 's-Hired';
+                    
+                    dotsHTML += `<div class="track-dot ${dotClass} ${active}" title="${st}"></div>`;
+                });
+            }
+
+            // 3. Payment Status Check
+            let payText = `<i class="fas fa-circle-notch fa-spin"></i> Verifying Payment...`;
+            let payColor = '#b45309'; // amber
+            
+            if(app.paymentStatus === 'Verified' || status === 'Verified' || status === 'Shortlisted' || status === 'Hired') {
+                payText = `<i class="fas fa-check-circle"></i> Payment Verified`;
+                payColor = '#166534';
+            } else if(status === 'Rejected') {
+                payText = `<i class="fas fa-ban"></i> App Rejected`;
+                payColor = '#991b1b';
+            } else if(status === 'Received') {
+                payText = `<i class="fas fa-hourglass-start"></i> Pending Review`;
+                payColor = '#64748b';
+            }
+
+            const html = `
+                <div class="app-card" onclick="openModal('${encodeURIComponent(JSON.stringify(app))}')">
+                    <div class="ac-header">
+                        <div class="job-info">
+                            <h3>${app.jobTitle}</h3>
+                            <p><i class="fas fa-building"></i> ${app.companyName || 'Inc'}</p>
+                        </div>
+                        <div class="ac-date">${date}</div>
+                    </div>
+                    
+                    <div class="ac-body">
+                        <div class="status-track">
+                            ${dotsHTML}
+                        </div>
+                        <div class="status-badge ${sClass}">
+                            <i class="fas ${sIcon}"></i> ${sText}
+                        </div>
+                    </div>
+
+                    <div class="ac-footer">
+                        <div class="pay-info" style="color:${payColor}">
+                           ${payText}
+                        </div>
+                        <button class="btn-view">Details <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            `;
+            appList.insertAdjacentHTML('beforeend', html);
+        }
+
+        // OPEN MODAL
+        window.openModal = (encoded) => {
+            currentApp = JSON.parse(decodeURIComponent(encoded));
+            const st = currentApp.status || 'Received';
+
+            // DYNAMIC ALERT BOX
+            let alertHTML = '';
+            
+            if(st === 'Under Review') {
+                alertHTML = `
+                <div class="alert-box ab-Review">
+                    <i class="fas fa-info-circle"></i> <strong>Under Review:</strong><br>
+                    Our team is currently reviewing your payment code and details.
+                </div>`;
+            } else if(st === 'Verified') {
+                alertHTML = `
+                <div class="alert-box ab-Verified">
+                    <i class="fas fa-check-circle"></i> <strong>Verified:</strong><br>
+                    Payment confirmed! Your application is now valid and moving to the shortlist phase.
+                </div>`;
+            } else if(st === 'Hired') {
+                alertHTML = `
+                <div class="alert-box ab-Hired">
+                    <i class="fas fa-trophy"></i> <strong>Congratulations!</strong><br>
+                    You have been hired for this position. HR will contact you shortly via WhatsApp/Email.
+                </div>`;
+            } else if(st === 'Rejected') {
+                const reason = currentApp.rejectReason || "Criteria not met.";
+                alertHTML = `
+                <div class="alert-box ab-Rejected">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Application Rejected:</strong><br>
+                    Reason: ${reason}
+                </div>`;
+            }
+
+            // MODAL CONTENT
+            modalBody.innerHTML = `
+                ${alertHTML}
+                <div class="info-grid">
+                    <div class="ig-row">
+                        <span class="ig-lbl">Job Title</span>
+                        <span class="ig-val">${currentApp.jobTitle}</span>
+                    </div>
+                    <div class="ig-row">
+                        <span class="ig-lbl">Reference ID</span>
+                        <span class="ig-val">#${currentApp.id.slice(-6).toUpperCase()}</span>
+                    </div>
+                    <div class="ig-row">
+                        <span class="ig-lbl">M-Pesa Code</span>
+                        <span class="ig-val" style="font-family:monospace">${currentApp.mpesaCode}</span>
+                    </div>
+                    <div class="ig-row">
+                        <span class="ig-lbl">Payment Status</span>
+                        <span class="ig-val">${currentApp.paymentStatus || (st==='Rejected'?'Rejected':'Pending')}</span>
+                    </div>
+                    <div class="ig-row" style="border:none">
+                        <span class="ig-lbl">Applied On</span>
+                        <span class="ig-val">${new Date(currentApp.appliedAt.seconds*1000).toDateString()}</span>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('open');
+        };
+
+        window.closeModal = () => modal.classList.remove('open');
+
+        // ACTIONS
+        window.downloadReceipt = () => {
+            if(!currentApp) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(22); doc.setTextColor(15, 23, 42);
+            doc.text("HireSphere", 14, 20);
+            
+            doc.setFontSize(10); doc.setTextColor(100);
+            doc.text("Official Application Receipt", 14, 28);
+            
+            const data = [
+                ["Application ID", currentApp.id],
+                ["Candidate", currentApp.fullName],
+                ["Position", currentApp.jobTitle],
+                ["M-Pesa Code", currentApp.mpesaCode],
+                ["Current Status", currentApp.status],
+                ["Date", new Date().toLocaleString()]
+            ];
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Field', 'Detail']],
+                body: data,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42] }
+            });
+
+            // Watermark
+            if(currentApp.status === 'Hired') {
+                doc.setTextColor(22, 101, 52); doc.setFontSize(40);
+                doc.text("HIRED", 100, 100, {angle: 45, align:'center', opacity:0.2});
+            } else if(currentApp.status === 'Verified') {
+                doc.setTextColor(37, 99, 235); doc.setFontSize(40);
+                doc.text("VERIFIED", 100, 100, {angle: 45, align:'center', opacity:0.2});
+            }
+
+            doc.save(`Receipt_${currentApp.mpesaCode}.pdf`);
+        };
+
+        window.contactSupport = () => {
+            const msg = `Hello, I need help regarding my application #${currentApp.id.slice(-4)} for ${currentApp.jobTitle}.`;
+            window.open(`https://wa.me/${supportPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
+        // NAV ALERTS
+        function setupNotifs(uid) {
+            const q = query(collection(db, "notifications"), where("userId", "==", uid), where("read", "==", false));
+            onSnapshot(q, snap => {
+                const b = document.getElementById('navBadge');
+                if(snap.size > 0) {
+                    b.textContent = snap.size > 9 ? '9+' : snap.size;
+                    b.classList.add('show');
+                } else b.classList.remove('show');
+            });
+        }
+
+        // Auto Hide Nav
+        const header = document.getElementById('header');
+        const btmNav = document.getElementById('btmNav');
+        let lastY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const currY = window.scrollY;
+            if(Math.abs(currY - lastY) < 10) return;
+            if(currY > lastY && currY > 60) {
+                header.classList.add('nav-hidden');
+                btmNav.classList.add('nav-hidden');
+            } else {
+                header.classList.remove('nav-hidden');
+                btmNav.classList.remove('nav-hidden');
+            }
+            lastY = currY;
+        }, {passive:true});
+
+    </script>
+</body>
+</html>

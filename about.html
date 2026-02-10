@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>About Us | Hiresphere</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* DYNAMIC VARIABLES (Will be updated by JS) */
+            --primary-dark: #0F172A;
+            --accent-main: #2563EB;
+            --accent-light: #EFF6FF;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-body: #F8FAFC;
+            --surface-white: #ffffff;
+            --shadow-subtle: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --radius-md: 20px;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {margin:0;padding:0;box-sizing:border-box;}
+
+        body {
+            font-family: var(--font-main);
+            color: var(--text-main);
+            background: url('assets/images/background.png') repeat, var(--bg-body);
+            background-size: 300px;
+            min-height: 100vh;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+
+        /* ---- HEADER ---- */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 5%; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+        header.hidden { transform: translateY(-100%); }
+        
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-container img { height: 40px; width: auto; }
+        .logo-text { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+
+        /* ---- CONTENT ---- */
+        .page-container {
+            margin-top: 90px;
+            padding: 0 5%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center; padding: 50px 25px;
+            background: linear-gradient(135deg, var(--accent-light) 0%, #FFFFFF 100%);
+            border-radius: 30px; margin-bottom: 30px; position: relative; overflow: hidden;
+            box-shadow: var(--shadow-subtle); border: 1px solid rgba(255,255,255,0.8);
+            animation: fadeIn 0.6s ease-out;
+        }
+        .hero-section::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+            background: rgba(37, 99, 235, 0.05); border-radius: 50%;
+        }
+        .hero-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--primary-dark); margin-bottom: 15px; position: relative; }
+        .hero-text { font-size: 1.05rem; color: var(--text-muted); line-height: 1.7; max-width: 650px; margin: 0 auto; position: relative; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--surface-white); padding: 25px 15px; border-radius: var(--radius-md);
+            text-align: center; box-shadow: var(--shadow-subtle); border: 1px solid rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .stat-number { font-size: 2rem; font-weight: 800; color: var(--accent-main); display: block; margin-bottom: 5px; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Info Sections */
+        .info-section { margin-bottom: 40px; animation: slideUp 0.6s ease-out; }
+        .section-title { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .section-title i { color: var(--accent-main); background: var(--accent-light); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 1rem; }
+        
+        .text-block { 
+            background: var(--surface-white); padding: 30px; border-radius: var(--radius-md); 
+            box-shadow: var(--shadow-subtle); line-height: 1.8; color: #475569; font-size: 1rem;
+            border-left: 4px solid var(--accent-main);
+        }
+
+        /* Contact Details (Dynamic) */
+        .contact-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;
+        }
+        .contact-card {
+            background: var(--surface-white); padding: 20px 25px; border-radius: var(--radius-md);
+            display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow-subtle);
+            text-decoration: none; color: inherit; transition: var(--transition); border: 1px solid transparent;
+        }
+        .contact-card:hover { transform: translateY(-3px); border-color: rgba(37, 99, 235, 0.2); background: #fdfdfd; }
+        
+        .c-icon { 
+            width: 50px; height: 50px; border-radius: 14px; background: var(--accent-light); 
+            color: var(--accent-main); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; 
+            flex-shrink: 0;
+        }
+        .c-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 2px; }
+        .c-info p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.3; }
+
+        /* FAQ Accordion */
+        .faq-item {
+            background: var(--surface-white); border-radius: 16px; margin-bottom: 12px;
+            overflow: hidden; box-shadow: var(--shadow-subtle); border: 1px solid rgba(0,0,0,0.02);
+        }
+        .faq-header {
+            padding: 20px 25px; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-weight: 600; color: var(--primary-dark); transition: background 0.2s;
+        }
+        .faq-header:hover { background: #f8fafc; }
+        .faq-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 25px; color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;
+        }
+        .faq-item.active .faq-body { padding: 0 25px 25px 25px; max-height: 250px; }
+        .faq-item.active .faq-header i { transform: rotate(180deg); color: var(--accent-main); }
+        .faq-icon { transition: transform 0.3s; color: #cbd5e1; }
+
+        /* Professional Connect Buttons */
+        .connect-section {
+            background: var(--primary-dark); border-radius: 24px; padding: 30px;
+            text-align: center; color: white; margin-top: 40px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+        }
+        .connect-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; font-family: 'Playfair Display', serif; }
+        
+        .social-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        
+        .connect-btn {
+            display: flex; align-items: center; gap: 10px; padding: 12px 25px;
+            border-radius: 50px; font-weight: 600; text-decoration: none;
+            transition: var(--transition); font-size: 0.9rem;
+        }
+        
+        .btn-wa { background: #25D366; color: white; }
+        .btn-wa:hover { background: #1ebc57; transform: translateY(-3px); }
+        
+        .btn-tt { background: #000000; color: white; border: 1px solid #333; }
+        .btn-tt:hover { background: #1a1a1a; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        .btn-mail { background: white; color: var(--primary-dark); }
+        .btn-mail:hover { background: #f1f5f9; transform: translateY(-3px); }
+
+        /* Loader */
+        #page-loader { 
+            position: fixed; inset: 0; background: #fff; z-index: 10000; 
+            display: flex; justify-content: center; align-items: center; 
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-dark); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around;
+            padding: 12px 20px; border-radius: 35px; z-index: 9999;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bottom-nav.hidden { transform: translateX(-50%) translateY(200%); }
+
+        .nav-item { 
+            text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; 
+            align-items: center; gap: 5px; font-size: 0.7rem; transition: var(--transition); font-weight: 500;
+            position: relative;
+        }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .nav-item.active { color: #fff; }
+        .nav-item.active i { color: var(--accent-main); transform: translateY(-2px); }
+
+        .nav-badge {
+            position: absolute; top: -5px; right: 2px;
+            background: #ef4444; color: white;
+            font-size: 0.6rem; font-weight: bold; width: 16px; height: 16px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; border: 2px solid #0F172A;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .nav-badge.show { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div id="page-loader"><div class="spinner"></div></div>
+
+    <header id="mainHeader">
+        <a href="dashboard.html" class="logo-container">
+            <img src="assets/images/logo.png" alt="Logo" id="headerLogo">
+            <span class="logo-text" id="headerAppName">HireSphere</span>
+        </a>
+    </header>
+
+    <div class="page-container">
+
+        <!-- Hero -->
+        <div class="hero-section">
+            <h1 class="hero-title">Connecting Talent</h1>
+            <p class="hero-text"><span class="brand-name-span">HireSphere</span> is the bridge between ambitious professionals and world-class organizations. We simplify the hiring process through technology, transparency, and trust.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number" id="statJobs">500+</span>
+                <span class="stat-label">Jobs Posted</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="statUsers">10k+</span>
+                <span class="stat-label">Users</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="statHires">1.2k</span>
+                <span class="stat-label">Hired</span>
+            </div>
+        </div>
+
+        <!-- Our Mission -->
+        <div class="info-section">
+            <div class="section-title"><i class="fas fa-bullseye"></i> Our Mission</div>
+            <div class="text-block">
+                To empower individuals by providing seamless access to career opportunities while helping companies build diverse, high-performing teams. We believe in transparency, speed, and quality in every connection we make.
+            </div>
+        </div>
+
+        <!-- Contact Us (Dynamic) -->
+        <div class="info-section">
+            <div class="section-title"><i class="fas fa-address-card"></i> Corporate Contacts</div>
+            <div class="contact-grid">
+                
+                <!-- Email -->
+                <a href="#" id="contactEmailLink" class="contact-card">
+                    <div class="c-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="c-info">
+                        <h4>General Inquiries</h4>
+                        <p id="displayEmail">Loading...</p>
+                    </div>
+                </a>
+                
+                <!-- Phone -->
+                <a href="#" id="contactPhoneLink" class="contact-card">
+                    <div class="c-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="c-info">
+                        <h4>Support Line</h4>
+                        <p id="displayPhone">Loading...</p>
+                    </div>
+                </a>
+
+                 <!-- Address -->
+                 <div class="contact-card">
+                    <div class="c-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="c-info">
+                        <h4>Headquarters</h4>
+                        <p id="displayAddress">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="info-section">
+            <div class="section-title"><i class="fas fa-question-circle"></i> Frequently Asked Questions</div>
+            
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span>Is <span class="brand-name-span">HireSphere</span> free for job seekers?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-body">Yes! Creating a profile, browsing jobs, and applying is completely free for all candidates. We believe opportunity should be accessible to everyone.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span>How do I verify my account?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-body">Account verification happens automatically via email. For profile badges, please complete your profile 100% and our team will review it.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-header" onclick="toggleFaq(this)">
+                    <span>How can I contact support?</span>
+                    <i class="fas fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-body">You can reach us via the 'Help Center' in your settings or use the dedicated contact buttons below for immediate assistance.</div>
+            </div>
+        </div>
+
+        <!-- Connect Buttons (New) -->
+        <div class="connect-section">
+            <div class="connect-title">Stay Connected</div>
+            <div class="social-row">
+                <a href="#" id="btnWa" class="connect-btn btn-wa" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="#" id="btnTt" class="connect-btn btn-tt" target="_blank">
+                    <i class="fab fa-tiktok"></i> Follow on TikTok
+                </a>
+                <a href="#" id="btnMailBottom" class="connect-btn btn-mail">
+                    <i class="fas fa-envelope"></i> Send an Email
+                </a>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:30px; color:#94a3b8; font-size:0.8rem;">
+            &copy; 2024 <span class="brand-name-span">HireSphere</span> Inc. All rights reserved.
+        </div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-th-large"></i> <span>Dashboard</span>
+        </a>
+        <a href="jobs.html" class="nav-item">
+            <i class="fas fa-briefcase"></i> <span>Jobs</span>
+        </a>
+        <a href="notifications.html" class="nav-item">
+            <div class="nav-badge" id="navBadge">0</div>
+            <i class="fas fa-bell"></i> <span>Alerts</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i> <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { auth, db } from './config.js'; 
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { doc, getDoc, collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const pageLoader = document.getElementById('page-loader');
+        const navBadge = document.getElementById('navBadge');
+        const headerAppName = document.getElementById('headerAppName');
+        const brandSpans = document.querySelectorAll('.brand-name-span');
+        
+        // Text Elements
+        const displayEmail = document.getElementById('displayEmail');
+        const displayPhone = document.getElementById('displayPhone');
+        const displayAddress = document.getElementById('displayAddress');
+        
+        // Links & Cards
+        const linkEmail = document.getElementById('contactEmailLink');
+        const linkPhone = document.getElementById('contactPhoneLink');
+        
+        // Buttons
+        const btnWa = document.getElementById('btnWa');
+        const btnTt = document.getElementById('btnTt');
+        const btnMailBottom = document.getElementById('btnMailBottom');
+
+        // Stats
+        const statJobs = document.getElementById('statJobs');
+        const statUsers = document.getElementById('statUsers');
+        
+        // Auto-Hide Scroll
+        const header = document.getElementById('mainHeader');
+        const bottomNav = document.getElementById('bottomNav');
+
+        // 1. Auth & Init
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                setupNotificationListener(user.uid);
+                await loadAppConfig();
+                pageLoader.style.display = 'none';
+            } else {
+                window.location.href = "signin.html";
+            }
+        });
+
+        // 2. Fetch Dynamic Data
+        async function loadAppConfig() {
+            try {
+                // Branding (AppName, Colors)
+                const brandSnap = await getDoc(doc(db, "settings", "branding"));
+                if (brandSnap.exists()) {
+                    const data = brandSnap.data();
+                    const appName = data.appName || 'HireSphere';
+                    
+                    document.title = `About Us | ${appName}`;
+                    headerAppName.textContent = appName;
+                    
+                    brandSpans.forEach(el => el.textContent = appName);
+
+                    if(data.primaryColor) {
+                        document.documentElement.style.setProperty('--primary-dark', data.primaryColor);
+                        document.documentElement.style.setProperty('--accent-main', data.primaryColor);
+                        document.documentElement.style.setProperty('--accent-light', `${data.primaryColor}15`);
+                    }
+                    if(data.fontFamily) {
+                        document.documentElement.style.setProperty('--font-main', `${data.fontFamily}, sans-serif`);
+                    }
+                }
+
+                // Contact Info (Phone, Email, Address, Socials)
+                const contactSnap = await getDoc(doc(db, "settings", "contacts"));
+                if (contactSnap.exists()) {
+                    const data = contactSnap.data();
+
+                    // --- Data Variables ---
+                    const email = data.supportEmail || "support@hiresphere.com";
+                    const phone = data.contactPhone || "+254 700 000000";
+                    const addr = data.address || "Nairobi, Kenya";
+                    
+                    const waNum = data.whatsappNumber || "254700000000";
+                    const ttLink = data.tiktokLink || "#";
+
+                    // --- Render Text ---
+                    displayEmail.textContent = email;
+                    displayPhone.textContent = phone;
+                    displayAddress.textContent = addr;
+
+                    // --- Update Links ---
+                    linkEmail.href = `mailto:${email}`;
+                    linkPhone.href = `tel:${phone}`;
+                    
+                    // --- Bottom Buttons ---
+                    btnWa.href = `https://wa.me/${waNum}`;
+                    if(data.tiktokLink && data.tiktokLink.length > 5) {
+                         btnTt.href = data.tiktokLink;
+                         btnTt.style.display = 'flex';
+                    } else {
+                        btnTt.style.display = 'none';
+                    }
+                    
+                    btnMailBottom.href = `mailto:${email}`;
+
+                } else {
+                    // Fallback Defaults if doc missing
+                    displayEmail.textContent = "support@hiresphere.com";
+                    displayPhone.textContent = "+254 700 123 456";
+                    displayAddress.textContent = "Nairobi, Kenya";
+                }
+            } catch (e) {
+                console.error("Error fetching settings:", e);
+                displayEmail.textContent = "Unavailable";
+            }
+        }
+
+        // 3. FAQ Logic
+        window.toggleFaq = (header) => {
+            const item = header.parentElement;
+            item.classList.toggle('active');
+        };
+
+        // 4. Notification Badge
+        function setupNotificationListener(userId) {
+            const q = query(collection(db, "notifications"), where("userId", "==", userId), where("read", "==", false));
+            onSnapshot(q, (snapshot) => {
+                const count = snapshot.size;
+                if(count > 0) {
+                    navBadge.textContent = count > 9 ? '9+' : count;
+                    navBadge.classList.add('show');
+                } else {
+                    navBadge.classList.remove('show');
+                }
+            });
+        }
+
+        // 5. Scroll Logic
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll <= 0) {
+                header.classList.remove('hidden');
+                bottomNav.classList.remove('hidden');
+            } else {
+                if (currentScroll > lastScroll && currentScroll > 80) {
+                    header.classList.add('hidden');
+                    bottomNav.classList.add('hidden'); 
+                } else {
+                    header.classList.remove('hidden');
+                    bottomNav.classList.remove('hidden'); 
+                }
+            }
+            lastScroll = currentScroll;
+        });
+
+    </script>
+</body>
+</html>

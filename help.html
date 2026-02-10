@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Help Center | HireSphere</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* DYNAMIC VARIABLES (Updated via JS) */
+            --primary-dark: #0F172A;
+            --primary-blue: #334155;
+            --accent-main: #2563EB;
+            --accent-light: #EFF6FF;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-body: #F8FAFC;
+            --surface-white: #ffffff;
+            
+            --chat-user-bg: #2563EB;
+            --chat-bot-bg: #F1F5F9;
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --radius-md: 16px;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {margin:0;padding:0;box-sizing:border-box;}
+
+        body {
+            font-family: var(--font-main);
+            color: var(--text-main);
+            background: url('assets/images/background.png') repeat, var(--bg-body);
+            background-size: 300px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            padding-bottom: 120px;
+        }
+
+        /* ---- HEADER ---- */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 5%; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000; box-shadow: var(--shadow-subtle); border-bottom: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+        header.hidden { transform: translateY(-100%); }
+        
+        .logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-container img { height: 40px; width: auto; }
+        .logo-text { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+
+        .logout-btn {
+            background: rgba(15, 23, 42, 0.05); color: var(--primary-dark); border: none;
+            padding: 8px 16px; border-radius: 50px; font-size: 0.85rem;
+            cursor: pointer; font-weight: 600; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .logout-btn:hover { background: #fee2e2; color: #ef4444; }
+
+        /* ---- CONTENT CONTAINER ---- */
+        .page-container {
+            margin-top: 80px;
+            padding: 20px 5%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            display: flex; flex-direction: column; height: calc(100vh - 100px);
+        }
+
+        .page-header { margin-bottom: 20px; animation: slideUp 0.5s ease-out; flex-shrink: 0; }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 5px; }
+        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* Ticket Badges */
+        .ticket-status-bar { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .ticket-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
+        }
+        .badge-id { background: #e0f2fe; color: #0284c7; }
+        .badge-status-open { background: #dcfce7; color: #166534; }
+        .badge-status-closed { background: #f1f5f9; color: #64748b; }
+
+        /* ---- CONTACT CARDS ---- */
+        .contact-grid {
+            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 20px; flex-shrink: 0;
+            scrollbar-width: none;
+        }
+        .contact-grid::-webkit-scrollbar { display: none; }
+        
+        .contact-card {
+            background: var(--surface-white); padding: 15px 20px; border-radius: var(--radius-md);
+            border: 1px solid rgba(0,0,0,0.04); box-shadow: var(--shadow-subtle);
+            text-align: center; text-decoration: none; color: var(--text-main);
+            transition: var(--transition); min-width: 130px; flex: 1;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            border-bottom: 3px solid var(--accent-main);
+        }
+        .contact-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .contact-icon { font-size: 1.4rem; color: var(--accent-main); }
+        .contact-card h3 { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark); }
+        .contact-card p { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* ---- CHAT INTERFACE ---- */
+        .chat-wrapper {
+            flex: 1;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px -5px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.03);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 12px;
+            background: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        .msg {
+            max-width: 85%; padding: 12px 18px; border-radius: 20px;
+            font-size: 0.95rem; line-height: 1.5; position: relative;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            word-wrap: break-word;
+        }
+        @keyframes popIn { from{opacity:0; transform:scale(0.9) translateY(10px);} to{opacity:1; transform:scale(1) translateY(0);} }
+
+        .msg-bot { align-self: flex-start; background: var(--chat-bot-bg); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .msg-user { align-self: flex-end; background: var(--chat-user-bg); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+        
+        .msg-time { font-size: 0.65rem; margin-top: 6px; opacity: 0.7; text-align: right; display: block; }
+        .msg-bot .msg-time { text-align: left; }
+
+        /* Quick Chips */
+        .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .chip {
+            background: #fff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 24px;
+            font-size: 0.8rem; font-weight: 600; color: var(--primary-dark); cursor: pointer; transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .chip:hover { background: var(--accent-light); border-color: var(--accent-main); color: var(--accent-main); transform: translateY(-2px); }
+
+        /* Chat Input */
+        .chat-input-area {
+            padding: 15px; background: #fff; border-top: 1px solid #f1f5f9;
+            display: flex; gap: 12px; align-items: center;
+        }
+        .chat-input {
+            flex: 1; padding: 14px 20px; border-radius: 30px; border: 1px solid #e2e8f0;
+            background: #f8fafc; font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.3s;
+        }
+        .chat-input:focus { border-color: var(--accent-main); background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .send-btn {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--primary-dark);
+            color: #fff; border: none; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .send-btn:hover { background: var(--accent-main); transform: scale(1.05); }
+        .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none; gap: 5px; padding: 12px 18px; background: #f1f5f9;
+            border-radius: 20px; width: fit-content; margin-bottom: 15px; align-self: flex-start;
+            border-bottom-left-radius: 4px; margin-left: 20px;
+        }
+        .dot { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Resolved Banner */
+        .resolved-banner {
+            background: #ecfdf5; color: #047857; text-align: center; padding: 12px;
+            font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid #d1fae5; display: none;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* ---- BOTTOM NAV ---- */
+        .bottom-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around;
+            padding: 12px 20px; border-radius: 35px; z-index: 9999;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bottom-nav.hidden { transform: translateX(-50%) translateY(200%); }
+
+        .nav-item { 
+            text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; 
+            align-items: center; gap: 5px; font-size: 0.7rem; transition: var(--transition); font-weight: 500;
+            position: relative;
+        }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .nav-item.active { color: #fff; }
+        .nav-item.active i { color: var(--accent-main); transform: translateY(-2px); }
+
+        .nav-badge {
+            position: absolute; top: -5px; right: 2px;
+            background: #ef4444; color: white;
+            font-size: 0.6rem; font-weight: bold; width: 16px; height: 16px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; border: 2px solid #0F172A;
+            animation: pulse 2s infinite; opacity: 0; transition: opacity 0.3s;
+        }
+        .nav-badge.show { opacity: 1; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Loader */
+        #page-loader { 
+            position: fixed; inset: 0; background: #fff; z-index: 10000; 
+            display: flex; justify-content: center; align-items: center; 
+            transition: opacity 0.3s ease;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-dark); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+    <script>
+        setTimeout(() => {
+            const loader = document.getElementById('page-loader');
+            if(loader && loader.style.display !== 'none') {
+                 // Fallback if Firebase hangs
+                 console.warn("Loader timeout forced.");
+                 loader.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+</head>
+<body>
+
+    <!-- PAGE LOADER -->
+    <div id="page-loader"><div class="spinner"></div></div>
+
+    <!-- HEADER -->
+    <header id="header">
+        <a href="dashboard.html" class="logo-container">
+            <img src="assets/images/logo.png" alt="Logo" id="headerLogo">
+            <span class="logo-text" id="headerAppName">HireSphere</span>
+        </a>
+        <button id="logoutBtn" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </button>
+    </header>
+
+    <div class="page-container">
+        
+        <div class="page-header">
+            <h1 class="page-title">Help Center</h1>
+            <p class="page-subtitle">Instant answers & direct support.</p>
+            <div id="ticketBadgeArea" class="ticket-status-bar"></div>
+        </div>
+
+        <!-- DYNAMIC CONTACTS GRID -->
+        <div class="contact-grid">
+            <a href="#" id="waLink" class="contact-card" target="_blank">
+                <div class="contact-icon"><i class="fab fa-whatsapp"></i></div>
+                <h3>WhatsApp</h3>
+                <p>Chat Live</p>
+            </a>
+            <a href="#" id="emailLink" class="contact-card">
+                <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                <h3>Email</h3>
+                <p>Get Reply</p>
+            </a>
+            <a href="#" id="phoneLink" class="contact-card">
+                <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                <h3>Call</h3>
+                <p>Speak Now</p>
+            </a>
+            <a href="#" id="tiktokLink" class="contact-card" target="_blank" style="display:none;">
+                <div class="contact-icon"><i class="fab fa-tiktok"></i></div>
+                <h3>TikTok</h3>
+                <p>Follow Us</p>
+            </a>
+        </div>
+
+        <!-- MAIN CHAT AREA -->
+        <div class="chat-wrapper">
+            <div class="resolved-banner" id="resolvedBanner" style="display:none;">
+                <i class="fas fa-check-circle"></i> This ticket is resolved. Sending a message will reopen it.
+            </div>
+            
+            <div class="chat-messages" id="msgContainer">
+                <!-- Messages Injected Here -->
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+
+            <div class="chat-input-area" id="inputArea">
+                <input type="text" class="chat-input" id="msgInput" placeholder="Type your issue..." autocomplete="off">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-th-large"></i> <span>Dashboard</span>
+        </a>
+        <a href="jobs.html" class="nav-item">
+            <i class="fas fa-briefcase"></i> <span>Jobs</span>
+        </a>
+        <a href="notifications.html" class="nav-item">
+            <div class="nav-badge" id="navBadge">0</div>
+            <i class="fas fa-bell"></i> <span>Alerts</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i> <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- LOGIC -->
+    <script type="module">
+        import { auth, db } from './config.js'; 
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { collection, getDocs, getDoc, doc, addDoc, updateDoc, query, where, orderBy, limit, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const pageLoader = document.getElementById('page-loader');
+        const msgContainer = document.getElementById('msgContainer');
+        const msgInput = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const resolvedBanner = document.getElementById('resolvedBanner');
+        const ticketBadgeArea = document.getElementById('ticketBadgeArea');
+        const navBadge = document.getElementById('navBadge');
+
+        // Dynamic Elements
+        const headerAppName = document.getElementById('headerAppName');
+        const waLink = document.getElementById('waLink');
+        const emailLink = document.getElementById('emailLink');
+        const phoneLink = document.getElementById('phoneLink');
+        const tiktokLink = document.getElementById('tiktokLink');
+
+        let currentUser = null;
+        let activeTicketId = null;
+        let messagesUnsub = null;
+        let ticketUnsub = null;
+        let isSending = false;
+
+        // --- 1. CONFIG LOADER (Syncs with Admin Page Settings) ---
+        async function loadAppConfig() {
+            try {
+                // Branding Settings
+                const brandSnap = await getDoc(doc(db, "settings", "branding"));
+                if (brandSnap.exists()) {
+                    const data = brandSnap.data();
+                    if(data.appName) {
+                        document.title = `Help Center | ${data.appName}`;
+                        headerAppName.textContent = data.appName;
+                    }
+                    if(data.primaryColor) {
+                        document.documentElement.style.setProperty('--primary-dark', data.primaryColor);
+                        document.documentElement.style.setProperty('--chat-user-bg', data.primaryColor);
+                    }
+                    if(data.fontFamily) {
+                        document.documentElement.style.setProperty('--font-main', `${data.fontFamily}, sans-serif`);
+                    }
+                }
+
+                // Contact Settings
+                const contactSnap = await getDoc(doc(db, "settings", "contacts"));
+                if (contactSnap.exists()) {
+                    const data = contactSnap.data();
+                    
+                    if(data.whatsappNumber) {
+                        waLink.href = `https://wa.me/${data.whatsappNumber}?text=Hello%20Support,%20I%20have%20an%20inquiry.`;
+                    } else waLink.style.display = 'none';
+
+                    if(data.supportEmail) emailLink.href = `mailto:${data.supportEmail}`;
+                    else emailLink.style.display = 'none';
+
+                    if(data.contactPhone) phoneLink.href = `tel:${data.contactPhone}`;
+                    else phoneLink.style.display = 'none';
+
+                    if(data.tiktokLink) {
+                        tiktokLink.href = data.tiktokLink;
+                        tiktokLink.style.display = 'flex';
+                    }
+                }
+            } catch (e) { console.error("Config Error", e); }
+        }
+
+        // --- 2. AUTH & INIT ---
+        document.addEventListener('DOMContentLoaded', loadAppConfig);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                try {
+                    await Promise.all([
+                        initializeChat(user.uid),
+                        setupNotificationListener(user.uid)
+                    ]);
+                } catch (e) {
+                    console.error("Init Error:", e);
+                } finally {
+                    pageLoader.style.display = 'none';
+                }
+            } else {
+                window.location.href = "signin.html";
+            }
+        });
+
+        // --- 3. CHAT INITIALIZATION ---
+        async function initializeChat(uid) {
+            // Check for most recent Open or Recently Closed ticket
+            const q = query(
+                collection(db, "support_tickets"), 
+                where("userId", "==", uid), 
+                orderBy("lastUpdated", "desc"),
+                limit(1)
+            );
+
+            const snap = await getDocs(q);
+
+            if (!snap.empty) {
+                const ticketDoc = snap.docs[0];
+                activeTicketId = ticketDoc.id;
+                loadTicketData(ticketDoc.data());
+                
+                // Realtime listeners
+                loadMessages(activeTicketId);
+                listenToTicketStatus(activeTicketId);
+            } else {
+                // New User / No Ticket
+                showBotGreeting();
+            }
+        }
+
+        function loadTicketData(data) {
+            // Update Badges
+            ticketBadgeArea.innerHTML = '';
+            
+            if (data.ticketCode) {
+                const idBadge = document.createElement('span');
+                idBadge.className = 'ticket-badge badge-id';
+                idBadge.innerHTML = `<i class="fas fa-hashtag"></i> ${data.ticketCode}`;
+                ticketBadgeArea.appendChild(idBadge);
+            }
+
+            const statusBadge = document.createElement('span');
+            statusBadge.className = `ticket-badge badge-status-${data.status}`;
+            statusBadge.innerHTML = data.status === 'open' 
+                ? `<i class="fas fa-circle-notch fa-spin"></i> Open` 
+                : `<i class="fas fa-check"></i> Resolved`;
+            ticketBadgeArea.appendChild(statusBadge);
+        }
+
+        // --- 4. MESSAGING UI ---
+        function addMessageUI(text, type, time = null) {
+            const div = document.createElement('div');
+            div.className = `msg msg-${type}`;
+            
+            // Format Time
+            let timeStr = "Just now";
+            if (time) {
+                const date = time.seconds ? new Date(time.seconds * 1000) : new Date(time);
+                timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            div.innerHTML = `${text}<span class="msg-time">${timeStr}</span>`;
+            msgContainer.appendChild(div);
+            scrollToBottom();
+        }
+
+        function showBotGreeting() {
+            showBotMessage("Hello! I'm the HireSphere assistant. How can I help you today?", true);
+        }
+
+        function showBotMessage(text, showChips = false) {
+            typingIndicator.style.display = 'flex';
+            scrollToBottom();
+
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                
+                const div = document.createElement('div');
+                div.className = 'msg msg-bot';
+                div.innerHTML = `${text}<span class="msg-time">Just now</span>`;
+
+                if (showChips) {
+                    const chipsDiv = document.createElement('div');
+                    chipsDiv.className = 'quick-actions';
+                    chipsDiv.innerHTML = `
+                        <div class="chip" onclick="window.handleChip('Payment Verification')">💰 Payments</div>
+                        <div class="chip" onclick="window.handleChip('Job Application')">📄 Jobs</div>
+                        <div class="chip" onclick="window.handleChip('Account Issue')">🔒 Account</div>
+                        <div class="chip" onclick="window.handleChip('Other Inquiry')">💬 Other</div>
+                    `;
+                    div.appendChild(chipsDiv);
+                }
+                msgContainer.appendChild(div);
+                scrollToBottom();
+            }, 600); // Slight natural delay
+        }
+
+        // --- 5. INTERACTION LOGIC ---
+        window.handleChip = (text) => {
+            if(activeTicketId) sendMessage(text);
+            else {
+                // First interaction
+                addMessageUI(text, 'user');
+                processSmartBotReply(text);
+            }
+        };
+
+        sendBtn.addEventListener('click', () => sendMessage());
+        msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+
+        async function sendMessage(overrideText = null) {
+            const text = overrideText || msgInput.value.trim();
+            if(!text || isSending) return;
+            
+            msgInput.value = '';
+            isSending = true;
+
+            if (activeTicketId) {
+                // --- APPEND TO EXISTING TICKET ---
+                try {
+                    // Optimistic UI update
+                    // Note: Real update comes from Firestore listener, but this feels faster
+                    
+                    await addDoc(collection(db, `support_tickets/${activeTicketId}/messages`), {
+                        text: text, 
+                        sender: 'user', 
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    // Update Parent Ticket (Re-open if resolved)
+                    await updateDoc(doc(db, "support_tickets", activeTicketId), {
+                        lastUpdated: serverTimestamp(),
+                        hasUnreadAdmin: true, // Flag for admin dashboard
+                        status: "open", // Auto re-open
+                        snippet: text.substring(0, 50)
+                    });
+                    
+                } catch(e) { console.error("Send Error:", e); }
+            } else {
+                // --- CREATE NEW TICKET FLOW ---
+                addMessageUI(text, 'user');
+                processSmartBotReply(text);
+            }
+            isSending = false;
+        }
+
+        // --- 6. ADVANCED BOT & TICKET CREATION ---
+        async function processSmartBotReply(text) {
+            const lower = text.toLowerCase();
+            
+            // Auto-Responses based on keywords
+            if (lower.includes('mpesa') || lower.includes('payment') || lower.includes('code')) {
+                showBotMessage("I see this is regarding payments. Please ensure you have entered the M-Pesa code correctly in the verification page. Would you like me to connect you to an agent?", false);
+                // Delay then create ticket
+                setTimeout(() => createTicket(text, "Payment Issue"), 2000);
+                return;
+            }
+            
+            if (lower.includes('password') || lower.includes('reset')) {
+                 showBotMessage("You can reset your password on the login screen. If you're still stuck, I'm creating a ticket for you now.");
+                 setTimeout(() => createTicket(text, "Account Access"), 2000);
+                 return;
+            }
+
+            // Default
+            createTicket(text, "General Inquiry");
+        }
+
+        async function createTicket(initialIssue, category) {
+            typingIndicator.style.display = 'flex';
+            
+            try {
+                const ticketCode = "#T-" + Math.floor(10000 + Math.random() * 90000); // 5 Digit Code
+
+                // Create Parent Ticket
+                const ticketRef = await addDoc(collection(db, "support_tickets"), {
+                    userId: currentUser.uid,
+                    userName: currentUser.displayName || 'User', // Store name for Admin
+                    userEmail: currentUser.email,
+                    category: category,
+                    subject: initialIssue.substring(0, 40) + "...", 
+                    status: "open",
+                    ticketCode: ticketCode,
+                    createdAt: serverTimestamp(),
+                    lastUpdated: serverTimestamp(),
+                    hasUnreadAdmin: true,
+                    snippet: initialIssue
+                });
+
+                activeTicketId = ticketRef.id;
+
+                // Add Initial Messages
+                const batchPromises = [
+                    addDoc(collection(db, `support_tickets/${activeTicketId}/messages`), {
+                        text: initialIssue, sender: 'user', createdAt: serverTimestamp()
+                    }),
+                    addDoc(collection(db, `support_tickets/${activeTicketId}/messages`), {
+                        text: `Ticket ${ticketCode} created [${category}]. An admin will review this shortly.`,
+                        sender: 'bot', createdAt: serverTimestamp()
+                    })
+                ];
+                
+                await Promise.all(batchPromises);
+                
+                typingIndicator.style.display = 'none';
+                
+                // Initialize Listeners immediately
+                loadTicketData({ ticketCode: ticketCode, status: 'open' }); // Instant UI update
+                loadMessages(activeTicketId);
+                listenToTicketStatus(activeTicketId);
+
+            } catch (error) {
+                console.error("Ticket create error", error);
+                showBotMessage("I'm having trouble connecting. Please try again later.");
+            }
+        }
+
+        // --- 7. REAL-TIME LISTENERS ---
+        function loadMessages(ticketId) {
+            if(messagesUnsub) messagesUnsub();
+
+            const q = query(
+                collection(db, `support_tickets/${ticketId}/messages`), 
+                orderBy("createdAt", "asc")
+            );
+
+            messagesUnsub = onSnapshot(q, { includeMetadataChanges: true }, (snap) => {
+                msgContainer.innerHTML = ''; 
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    // Map 'admin' or 'bot' to 'bot' styling
+                    const uiType = (data.sender === 'user') ? 'user' : 'bot'; 
+                    const timeVal = data.createdAt ? data.createdAt : new Date();
+
+                    addMessageUI(data.text, uiType, timeVal);
+                });
+                scrollToBottom();
+            });
+        }
+
+        function listenToTicketStatus(ticketId) {
+            if(ticketUnsub) ticketUnsub();
+            
+            ticketUnsub = onSnapshot(doc(db, "support_tickets", ticketId), (docSnap) => {
+                if(docSnap.exists()){
+                    const data = docSnap.data();
+                    loadTicketData(data); // Updates badges
+
+                    if(data.status === 'resolved'){
+                        resolvedBanner.style.display = 'flex';
+                    } else {
+                        resolvedBanner.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function scrollToBottom() {
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        // --- 8. UTILS & NAV ---
+        function setupNotificationListener(userId) {
+            const q = query(collection(db, "notifications"), where("userId", "==", userId), where("read", "==", false));
+            onSnapshot(q, (snapshot) => {
+                const count = snapshot.size;
+                if(count > 0) {
+                    navBadge.textContent = count > 9 ? '9+' : count;
+                    navBadge.classList.add('show');
+                } else {
+                    navBadge.classList.remove('show');
+                }
+            });
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = "signin.html";
+        });
+
+        // Hide Header on Scroll
+        const header = document.getElementById('header');
+        const bottomNav = document.getElementById('bottomNav');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll <= 0) {
+                header.classList.remove('hidden');
+                bottomNav.classList.remove('hidden');
+            } else {
+                if (currentScroll > lastScroll && currentScroll > 80) {
+                    header.classList.add('hidden');
+                    bottomNav.classList.add('hidden'); 
+                } else {
+                    header.classList.remove('hidden');
+                    bottomNav.classList.remove('hidden'); 
+                }
+            }
+            lastScroll = currentScroll;
+        });
+
+    </script>
+</body>
+</html>
