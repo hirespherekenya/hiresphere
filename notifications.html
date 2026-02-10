@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Notifications | HireSphere</title>
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* ADVANCED COLOR PALETTE */
+            --primary-dark: #0F172A;
+            --primary-blue: #334155;
+            --accent-main: #2563EB;
+            --accent-light: #EFF6FF;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-body: #F8FAFC;
+            --surface-white: #ffffff;
+            
+            /* Status Colors */
+            --success-green: #10b981;
+            --success-bg: #dcfce7;
+            --danger-red: #ef4444;
+            --danger-bg: #fee2e2;
+            --warning-amber: #f59e0b;
+            --warning-bg: #fef3c7;
+            --info-blue: #3b82f6;
+            --info-bg: #dbeafe;
+
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background: url('assets/images/background.png') repeat, var(--bg-body);
+            background-size: 300px;
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        /* HEADER */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 5%; position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000; box-shadow: var(--shadow-subtle); border-bottom: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        header.nav-hidden { transform: translateY(-100%); }
+
+        .logo-con { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-con img { height: 38px; width: auto; }
+        .logo-text { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+        
+        .btn-refresh { 
+            background: white; border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 12px; 
+            color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            transition: var(--transition); font-size: 1rem;
+        }
+        .btn-refresh:hover { background: var(--primary-dark); color: white; border-color: var(--primary-dark); transform: rotate(180deg); }
+
+        /* CONTENT */
+        .container { margin-top: 90px; padding: 0 5%; max-width: 800px; margin-left: auto; margin-right: auto; }
+
+        .page-head { 
+            margin-bottom: 30px; display:flex; justify-content:space-between; align-items: flex-end; 
+            animation: slideUp 0.4s ease-out;
+        }
+        .page-title h1 { font-size: 1.8rem; font-family: 'Playfair Display', serif; color: var(--primary-dark); font-weight: 700; letter-spacing: -0.5px; }
+        .page-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+
+        .mark-read-btn { 
+            border: none; background: #e0f2fe; color: var(--accent-main); 
+            padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; 
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: var(--transition);
+        }
+        .mark-read-btn:hover:not(:disabled) { background: var(--accent-main); color: white; transform: translateY(-2px); }
+        .mark-read-btn:disabled { background: #f1f5f9; color: #cbd5e1; cursor: default; }
+
+        /* NOTIFICATIONS LIST */
+        .notif-list { display: flex; flex-direction: column; gap: 16px; animation: slideUp 0.5s ease-out; }
+        
+        .notif-card {
+            background: var(--surface-white); padding: 20px; border-radius: 20px;
+            box-shadow: var(--shadow-subtle); border: 1px solid rgba(0,0,0,0.04);
+            display: flex; gap: 18px; align-items: flex-start;
+            position: relative; overflow: hidden; transition: var(--transition);
+            cursor: pointer;
+        }
+        .notif-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-elevated); }
+        
+        /* Unread Styling */
+        .notif-card.unread { background: #fff; border-left: 5px solid var(--accent-main); }
+        .notif-card.unread::after {
+            content: ''; position: absolute; top: 20px; right: 20px;
+            width: 8px; height: 8px; background: var(--accent-main); border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Icon types */
+        .n-icon { 
+            width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; 
+            justify-content: center; flex-shrink: 0; font-size: 1.2rem; transition: var(--transition);
+        }
+        
+        .type-success .n-icon { background: var(--success-bg); color: var(--success-green); }
+        .type-error .n-icon { background: var(--danger-bg); color: var(--danger-red); }
+        .type-warning .n-icon { background: var(--warning-bg); color: var(--warning-amber); }
+        .type-info .n-icon { background: var(--info-bg); color: var(--info-blue); }
+        .type-default .n-icon { background: #f1f5f9; color: #64748b; }
+
+        .n-content { flex: 1; padding-right: 15px; }
+        .n-title { font-weight: 700; color: var(--primary-dark); font-size: 1rem; margin-bottom: 6px; }
+        .n-msg { color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 8px; }
+        
+        .n-meta { display: flex; align-items: center; gap: 10px; }
+        .n-time { font-size: 0.75rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .n-time i { font-size: 0.7rem; }
+
+        /* Empty State */
+        #emptyState { 
+            text-align: center; padding: 60px 20px; color: #94a3b8; display: none; 
+            background: white; border-radius: 20px; border: 1px dashed #cbd5e1;
+        }
+        #emptyState i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; color: #cbd5e1; }
+
+        /* Loader */
+        #page-loader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-dark); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Bottom Nav */
+        .btm-nav {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 25px; border-radius: 35px; z-index: 9999;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btm-nav.nav-hidden { transform: translate(-50%, 200%); }
+        .nav-item { text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.65rem; font-weight: 600; transition: 0.2s; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .nav-item.active { color: #fff; transform: translateY(-2px); }
+        .nav-item.active i { color: var(--accent-main); }
+    </style>
+</head>
+<body>
+
+    <div id="page-loader"><div class="spinner"></div></div>
+
+    <!-- HEADER -->
+    <header id="header">
+        <a href="dashboard.html" class="logo-con">
+            <img src="assets/images/logo.png" alt="Logo">
+            <span class="logo-text">HireSphere</span>
+        </a>
+        <button class="btn-refresh" onclick="window.location.reload()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="container">
+        <div class="page-head">
+            <div class="page-title">
+                <h1>Notifications</h1>
+                <p>Stay updated with your latest activities.</p>
+            </div>
+            <button class="mark-read-btn" id="markAllBtn" onclick="markAllRead()" disabled>
+                <i class="fas fa-check-double"></i> Mark all read
+            </button>
+        </div>
+
+        <div id="notifList" class="notif-list">
+            <!-- Notifications injected here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState">
+            <i class="far fa-bell-slash"></i>
+            <h3>All Caught Up!</h3>
+            <p>You have no new notifications at the moment.</p>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="btm-nav" id="btmNav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Home</span></a>
+        <a href="jobs.html" class="nav-item"><i class="fas fa-briefcase"></i><span>Jobs</span></a>
+        <a href="notifications.html" class="nav-item active"><i class="fas fa-bell"></i><span>Alerts</span></a>
+        <a href="profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+    </nav>
+
+    <!-- FIREBASE LOGIC (DEBUG VERSION) -->
+    <script type="module">
+        import { auth, db } from './config.js'; 
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const notifList = document.getElementById('notifList');
+        const emptyState = document.getElementById('emptyState');
+        const loader = document.getElementById('page-loader');
+        const markAllBtn = document.getElementById('markAllBtn');
+        let unreadDocs = [];
+
+        console.log("Script loaded. Waiting for Auth...");
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User logged in:", user.uid);
+                loadNotifications(user.uid);
+            } else {
+                console.log("No user. Redirecting...");
+                window.location.href = "signin.html";
+            }
+        });
+
+        function loadNotifications(uid) {
+            console.log("Attempting to load notifications for:", uid);
+
+            // 1. TRY THE FULL QUERY
+            try {
+                const q = query(
+                    collection(db, "notifications"), 
+                    where("userId", "==", uid), 
+                    orderBy("createdAt", "desc")
+                );
+                
+                onSnapshot(q, (snap) => {
+                    console.log("Snapshot received. Docs found:", snap.size);
+                    renderNotifications(snap);
+                }, (error) => {
+                    console.error("Full Query Error:", error);
+                    
+                    // 2. FALLBACK: IF INDEX ERROR, TRY WITHOUT SORTING
+                    if (error.code === 'failed-precondition') {
+                        console.warn("Index missing! Clicking the link in console is required. Trying fallback query...");
+                        const fallbackQ = query(collection(db, "notifications"), where("userId", "==", uid));
+                        onSnapshot(fallbackQ, (fallbackSnap) => {
+                            renderNotifications(fallbackSnap);
+                        });
+                    } else {
+                        alert("Error loading data: " + error.message);
+                        loader.style.display = 'none';
+                    }
+                });
+            } catch (e) {
+                console.error("Query Construction Error:", e);
+            }
+        }
+
+        function renderNotifications(snap) {
+            notifList.innerHTML = '';
+            unreadDocs = [];
+
+            if (snap.empty) { 
+                console.log("No notifications found for this user.");
+                emptyState.style.display = 'block'; 
+                markAllBtn.disabled = true;
+                loader.style.display = 'none';
+                return; 
+            }
+            
+            emptyState.style.display = 'none';
+
+            snap.forEach(d => {
+                const n = d.data();
+                const id = d.id;
+                
+                if(!n.read) unreadDocs.push(d.ref);
+
+                let typeClass = 'type-default';
+                let icon = 'fa-bell';
+                
+                if(n.type === 'success') { typeClass = 'type-success'; icon = 'fa-check-circle'; }
+                else if(n.type === 'error') { typeClass = 'type-error'; icon = 'fa-times-circle'; }
+                else if(n.type === 'warning') { typeClass = 'type-warning'; icon = 'fa-exclamation-triangle'; }
+                else if(n.type === 'info') { typeClass = 'type-info'; icon = 'fa-info-circle'; }
+
+                const date = n.createdAt ? new Date(n.createdAt.seconds * 1000) : new Date();
+                const timeStr = timeAgo(date);
+
+                const html = `
+                    <div class="notif-card ${n.read ? 'read' : 'unread'} ${typeClass}" 
+                            onclick="markOneRead('${id}', ${n.read})">
+                        <div class="n-icon"><i class="fas ${icon}"></i></div>
+                        <div class="n-content">
+                            <div class="n-title">${n.title || 'Notification'}</div>
+                            <div class="n-msg">${n.message || ''}</div>
+                            <div class="n-meta">
+                                <span class="n-time"><i class="far fa-clock"></i> ${timeStr}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                notifList.insertAdjacentHTML('beforeend', html);
+            });
+
+            if(unreadDocs.length > 0) {
+                markAllBtn.disabled = false;
+                markAllBtn.innerHTML = `<i class="fas fa-check-double"></i> Mark ${unreadDocs.length} read`;
+            } else {
+                markAllBtn.disabled = true;
+                markAllBtn.innerHTML = `<i class="fas fa-check"></i> All Read`;
+            }
+
+            loader.style.display = 'none';
+        }
+
+        window.markOneRead = async (id, isRead) => {
+            if(isRead) return;
+            try { await updateDoc(doc(db, "notifications", id), { read: true }); } 
+            catch(e) { console.error(e); }
+        };
+
+        window.markAllRead = async () => {
+            if(unreadDocs.length === 0) return;
+            markAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            try {
+                const batch = writeBatch(db);
+                unreadDocs.forEach(ref => batch.update(ref, { read: true }));
+                await batch.commit();
+            } catch(e) { console.error(e); alert("Update failed"); }
+        };
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            return "Just now";
+        }
+
+        // Auto Hide Nav
+        const header = document.getElementById('header');
+        const btmNav = document.getElementById('btmNav');
+        let lastY = window.scrollY;
+
+        window.addEventListener('scroll', () => {
+            const currY = window.scrollY;
+            if (Math.abs(currY - lastY) < 10) return; 
+            if (currY > lastY && currY > 60) {
+                header.classList.add('nav-hidden');
+                btmNav.classList.add('nav-hidden');
+            } else {
+                header.classList.remove('nav-hidden');
+                btmNav.classList.remove('nav-hidden');
+            }
+            lastY = currY;
+        }, { passive: true });
+    </script>
+</body>
+</html>
